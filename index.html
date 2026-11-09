@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SNS DL">
+<meta name="theme-color" content="#0f1115">
+<title>SNS Downloader</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%230f1115'/%3E%3Cpath d='M64 24v52' stroke='%234f8cff' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M40 56l24 24 24-24' fill='none' stroke='%234f8cff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M32 96h64' stroke='%23e8eaf0' stroke-width='10' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' fill='%230f1115'/%3E%3Cpath d='M64 24v52' stroke='%234f8cff' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M40 56l24 24 24-24' fill='none' stroke='%234f8cff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M32 96h64' stroke='%23e8eaf0' stroke-width='10' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root { --bg:#0f1115; --card:#181b22; --card-2:#20242d; --text:#e8eaf0; --muted:#8b93a7; --accent:#4f8cff; --accent-2:#3b74e0; --danger:#ff5c6c; --ok:#3ccf8e; --radius:14px; color-scheme:dark; }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Helvetica Neue",sans-serif; }
+body { padding-bottom:env(safe-area-inset-bottom); }
+.wrap { max-width:640px; margin:0 auto; padding:12px 16px 40px; }
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:calc(env(safe-area-inset-top) + 12px) 16px 4px; max-width:640px; margin:0 auto; }
+.brand { font-size:18px; font-weight:700; margin:0; }
+.card { background:var(--card); border-radius:var(--radius); padding:16px; margin-top:12px; }
+label { display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; }
+input[type=text],input[type=url],input[type=password],textarea { width:100%; font:inherit; color:var(--text); background:var(--card-2); border:1px solid #2c313d; border-radius:10px; padding:12px 14px; outline:none; min-height:46px; }
+input:focus { border-color:var(--accent); }
+button,.primary,.ghost { font:inherit; border:0; cursor:pointer; border-radius:10px; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; color:var(--text); }
+.primary { background:var(--accent); color:#fff; width:100%; padding:13px; font-weight:600; min-height:48px; margin-top:12px; }
+.primary:active { background:var(--accent-2); } .primary[disabled] { opacity:.5; }
+.ghost { background:var(--card-2); padding:10px 14px; min-height:44px; }
+.ghost.small { min-height:36px; padding:6px 12px; font-size:13px; }
+.icon-btn { background:transparent; font-size:22px; width:44px; height:44px; }
+.tabs { display:flex; background:var(--card-2); border-radius:10px; padding:3px; margin-bottom:14px; }
+.tab { flex:1; padding:9px; color:var(--muted); background:transparent; font-weight:600; font-size:14px; min-height:40px; }
+.tab.active { background:var(--card); color:var(--text); }
+.input-row { display:flex; gap:8px; align-items:center; } .input-row input { flex:1; }
+.at { color:var(--muted); font-size:18px; padding-left:4px; }
+.hint { color:var(--muted); font-size:13px; margin:10px 0 0; }
+.status { margin:12px 0 0; font-size:14px; padding:10px 12px; border-radius:10px; background:var(--card-2); }
+.status.error { color:var(--danger); } .status.ok { color:var(--ok); }
+.progress { height:4px; background:var(--card-2); border-radius:2px; overflow:hidden; margin-top:10px; }
+.progress i { display:block; height:100%; width:30%; background:var(--accent); animation:slide 1.4s infinite ease-in-out; }
+@keyframes slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(400%)} }
+.result-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:12px; }
+.author { font-weight:700; } .title { color:var(--muted); font-size:13px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+@media (min-width:480px) { .grid { grid-template-columns:repeat(3,1fr); } }
+.tile { position:relative; background:var(--card-2); border-radius:10px; overflow:hidden; aspect-ratio:1; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+.tile img,.tile video { width:100%; height:100%; object-fit:cover; display:block; }
+.tile .badge { position:absolute; top:6px; left:6px; background:rgba(0,0,0,.6); color:#fff; font-size:11px; padding:2px 7px; border-radius:6px; }
+.tile .dl { position:absolute; right:6px; bottom:6px; width:38px; height:38px; border-radius:50%; background:rgba(0,0,0,.65); color:#fff; font-size:18px; border:0; }
+.viewer { position:fixed; inset:0; background:rgba(0,0,0,.96); z-index:20; display:flex; flex-direction:column; }
+.viewer .close { position:absolute; top:calc(env(safe-area-inset-top) + 6px); right:6px; z-index:2; }
+#viewer-body { flex:1; display:flex; align-items:center; justify-content:center; min-height:0; padding-top:env(safe-area-inset-top); }
+#viewer-body img,#viewer-body video { max-width:100%; max-height:100%; object-fit:contain; }
+.viewer-actions { padding:12px 16px calc(env(safe-area-inset-bottom) + 16px); display:flex; gap:10px; }
+.viewer-actions .primary { margin:0; flex:1; } .viewer-actions .ghost { flex:1; }
+.sheet { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:30; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.sheet-inner { max-width:640px; margin:24px auto; margin-top:max(24px,env(safe-area-inset-top)); }
+.sheet-head { display:flex; justify-content:space-between; align-items:center; } .sheet-head h2 { font-size:17px; margin:0; }
+.history { list-style:none; margin:0; padding:0; }
+.history li { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid #2c313d; gap:10px; font-size:14px; }
+.history li span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.history li small { color:var(--muted); display:block; }
+a { color:var(--accent); }
+[hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <h1 class="brand">SNS Downloader</h1>
+  <button id="btn-settings" class="icon-btn" aria-label="設定">⚙︎</button>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-mode="url">投稿URL</button>
+      <button class="tab" data-mode="stories">ストーリーズ</button>
+    </div>
+    <div id="pane-url">
+      <div class="input-row">
+        <input id="url" type="url" inputmode="url" placeholder="X / Instagram の投稿URLを貼り付け" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+        <button id="btn-paste" class="ghost" type="button">貼付</button>
+      </div>
+      <p class="hint">X（Twitter）の投稿、Instagram の投稿・リール・ハイライトに対応。画像は元画質で取得します。</p>
+    </div>
+    <div id="pane-stories" hidden>
+      <div class="input-row">
+        <span class="at">@</span>
+        <input id="username" type="text" placeholder="Instagram ユーザー名" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+      </div>
+      <p class="hint">現在公開中のストーリーズを取得します。リポジトリの Secrets に Instagram の Cookie 設定が必要です。</p>
+    </div>
+    <button id="btn-go" class="primary">取得する</button>
+    <p id="status" class="status" hidden></p>
+    <div id="progress" class="progress" hidden><i></i></div>
+  </section>
+
+  <section id="result" class="card" hidden>
+    <div class="result-head">
+      <div>
+        <div id="r-author" class="author"></div>
+        <div id="r-title" class="title"></div>
+      </div>
+      <a id="r-open" class="ghost small" target="_blank" rel="noopener">元の投稿</a>
+    </div>
+    <div id="grid" class="grid"></div>
+    <p class="hint">画像・動画をタップ → 「共有 / 写真に保存」で写真アプリに保存できます。</p>
+  </section>
+
+  <section class="card">
+    <div class="sheet-head"><h2 style="font-size:15px;margin:0">最近の取得</h2><button id="btn-history" class="ghost small">更新</button></div>
+    <ul id="history" class="history"></ul>
+  </section>
+</main>
+
+<div id="viewer" class="viewer" hidden>
+  <button id="viewer-close" class="icon-btn close" aria-label="閉じる">✕</button>
+  <div id="viewer-body"></div>
+  <div class="viewer-actions">
+    <a id="viewer-dl" class="primary" download>↓ ダウンロード</a>
+    <button id="viewer-share" class="ghost" hidden>共有 / 写真に保存</button>
+  </div>
+</div>
+
+<div id="settings" class="sheet" hidden>
+  <div class="sheet-inner card">
+    <div class="sheet-head"><h2>接続設定</h2><button id="settings-close" class="icon-btn" aria-label="閉じる">✕</button></div>
+    <p class="hint">このページは GitHub の API を直接呼び出して、あなたのリポジトリの Actions を動かします。設定はこの端末のブラウザにだけ保存されます。</p>
+    <label for="s-repo">リポジトリ（owner/name）</label>
+    <input id="s-repo" type="text" autocapitalize="off" spellcheck="false" placeholder="booptemp/SNSDownloader1">
+    <label for="s-token">GitHub トークン（Fine-grained PAT）</label>
+    <input id="s-token" type="password" autocomplete="off" placeholder="github_pat_...">
+    <p class="hint">GitHub → Settings → Developer settings → Fine-grained tokens で作成。対象リポジトリをこのリポジトリだけに絞り、権限は <b>Actions: Read and write</b>、<b>Contents: Read</b> を付けてください。</p>
+    <label for="s-ref">ワークフローのあるブランチ（空欄なら既定ブランチ）</label>
+    <input id="s-ref" type="text" autocapitalize="off" spellcheck="false" placeholder="main">
+    <button id="s-save" class="primary">保存して接続テスト</button>
+    <p id="s-msg" class="status" hidden></p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const API = "https://api.github.com";
+  const WORKFLOW = "download.yml";
+  const BRANCH = "downloads";
+  let mode = "url";
+  const blobCache = new Map();
+
+  // ---- 設定
+  const cfg = {
+    get repo() { return (localStorage.getItem("snsdl.repo") || "").trim(); },
+    get token() { return (localStorage.getItem("snsdl.token") || "").trim(); },
+    get ref() { return (localStorage.getItem("snsdl.ref") || "").trim(); },
+  };
+  function headers(extra) {
+    return Object.assign({ Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }, extra || {});
+  }
+  async function gh(path, opts = {}) {
+    const r = await fetch(API + "/repos/" + cfg.repo + path, Object.assign({ cache: "no-store" }, opts, { headers: headers(opts.headers) }));
+    if (!r.ok) {
+      let msg = r.status + " " + r.statusText;
+      try { msg += ": " + (await r.json()).message; } catch {}
+      const e = new Error(msg); e.status = r.status; throw e;
+    }
+    return r;
+  }
+  const ghJson = (path, opts) => gh(path, opts).then((r) => r.json());
+  async function ghRaw(path) {
+    const r = await gh("/contents/" + path + "?ref=" + BRANCH, { headers: { Accept: "application/vnd.github.raw+json" } });
+    return r;
+  }
+
+  // ---- UI 共通
+  function setStatus(msg, cls) { const el = $("#status"); el.hidden = !msg; el.textContent = msg || ""; el.className = "status " + (cls || ""); }
+  function busy(on) { $("#btn-go").disabled = on; $("#progress").hidden = !on; }
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => {
+    mode = t.dataset.mode;
+    document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === t));
+    $("#pane-url").hidden = mode !== "url"; $("#pane-stories").hidden = mode !== "stories";
+  }));
+  $("#btn-paste").addEventListener("click", async () => {
+    try { const t = await navigator.clipboard.readText(); if (t) { $("#url").value = t.trim(); go(); } } catch { $("#url").focus(); }
+  });
+  $("#url").addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+  $("#username").addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+  $("#btn-go").addEventListener("click", go);
+
+  // ---- メイン処理: dispatch → run を探す → 完了待ち → manifest 取得
+  async function go() {
+    if (!cfg.repo || !cfg.token) { openSettings(); return; }
+    const input = (mode === "stories" ? $("#username").value : $("#url").value).trim();
+    if (!input) return;
+    const requestId = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+    busy(true); $("#result").hidden = true;
+    const t0 = Date.now();
+    const tick = (msg) => setStatus(`${msg}（${Math.round((Date.now() - t0) / 1000)}秒）`);
+    try {
+      let ref = cfg.ref;
+      if (!ref) ref = (await ghJson("")).default_branch;
+      tick("GitHub Actions を起動中…");
+      await gh(`/actions/workflows/${WORKFLOW}/dispatches`, {
+        method: "POST", body: JSON.stringify({ ref, inputs: { url: input, stories: mode === "stories", request_id: requestId } }),
+      });
+
+      // run-name "dl <requestId>" で自分の run を見つける
+      let run = null;
+      for (let i = 0; i < 40 && !run; i++) {
+        await sleep(3000);
+        tick("実行待ち…");
+        const data = await ghJson(`/actions/workflows/${WORKFLOW}/runs?event=workflow_dispatch&per_page=20`);
+        run = data.workflow_runs.find((r) => r.name === "dl " + requestId) || null;
+      }
+      if (!run) throw new Error("Actions の実行が見つかりません。ワークフローが有効か確認してください");
+
+      while (run.status !== "completed") {
+        await sleep(4000);
+        tick(run.status === "queued" ? "順番待ち…（他の取得が終わるまで待機）" : "取得中…（1〜2分かかります）");
+        run = await ghJson(`/actions/runs/${run.id}`);
+      }
+
+      let manifest = null;
+      for (let i = 0; i < 5 && !manifest; i++) {
+        try { manifest = await (await ghRaw(`requests/${requestId}/manifest.json`)).json(); }
+        catch (e) { if (e.status !== 404) throw e; await sleep(3000); }
+      }
+      if (!manifest) throw new Error("結果が保存されていません。Actions のログを確認してください（run #" + run.run_number + "）");
+      if (manifest.status !== "ok") throw new Error(manifest.error || "取得に失敗しました");
+
+      await render(manifest);
+      const n = manifest.files.filter((f) => !f.error).length;
+      setStatus(`${n} 件のメディアを取得しました（${Math.round((Date.now() - t0) / 1000)}秒）`, "ok");
+      loadHistory();
+    } catch (e) {
+      setStatus(e.message, "error");
+    } finally {
+      busy(false);
+    }
+  }
+
+  // ---- 表示
+  async function fileBlob(requestId, name) {
+    const key = requestId + "/" + name;
+    if (!blobCache.has(key)) {
+      const r = await ghRaw(`requests/${requestId}/${encodeURIComponent(name)}`);
+      const buf = await r.arrayBuffer();
+      const ext = name.split(".").pop().toLowerCase();
+      const type = ({ jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif", webp: "image/webp", mp4: "video/mp4", mov: "video/quicktime", webm: "video/webm" })[ext] || "application/octet-stream";
+      const blob = new Blob([buf], { type });
+      blobCache.set(key, { blob, url: URL.createObjectURL(blob) });
+    }
+    return blobCache.get(key);
+  }
+
+  async function render(m) {
+    $("#r-author").textContent = m.author ? "@" + m.author.replace(/^@/, "") : (m.site || "");
+    $("#r-title").textContent = m.title || "";
+    $("#r-open").href = m.source_url || "#";
+    const grid = $("#grid"); grid.innerHTML = "";
+    $("#result").hidden = false;
+    for (const f of m.files) {
+      const tile = document.createElement("div"); tile.className = "tile";
+      if (f.error) { tile.textContent = "取得失敗: " + f.error; grid.appendChild(tile); continue; }
+      tile.textContent = "読み込み中…";
+      const badge = document.createElement("span"); badge.className = "badge";
+      badge.textContent = (f.kind === "video" ? "動画" : "画像") + (f.width ? ` ${f.width}×${f.height}` : "") + ` ${(f.size / 1048576).toFixed(1)}MB`;
+      grid.appendChild(tile);
+      fileBlob(m.request_id, f.name).then(({ url }) => {
+        tile.textContent = "";
+        const media = document.createElement(f.kind === "video" ? "video" : "img");
+        media.src = url;
+        if (f.kind === "video") { media.muted = true; media.playsInline = true; media.preload = "metadata"; } else { media.alt = f.name; }
+        media.addEventListener("click", () => openViewer(m.request_id, f));
+        const dl = document.createElement("button"); dl.className = "dl"; dl.textContent = "↓"; dl.setAttribute("aria-label", "ダウンロード");
+        dl.addEventListener("click", () => saveFile(m.request_id, f));
+        tile.append(media, badge, dl);
+      }).catch((e) => { tile.textContent = "読み込み失敗: " + e.message; });
+    }
+  }
+
+  async function saveFile(requestId, f) {
+    const { url } = await fileBlob(requestId, f.name);
+    const a = document.createElement("a"); a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  async function openViewer(requestId, f) {
+    const { blob, url } = await fileBlob(requestId, f.name);
+    const body = $("#viewer-body"); body.innerHTML = "";
+    const el = document.createElement(f.kind === "video" ? "video" : "img");
+    el.src = url;
+    if (f.kind === "video") { el.controls = true; el.playsInline = true; el.autoplay = true; }
+    body.appendChild(el);
+    const dl = $("#viewer-dl"); dl.href = url; dl.download = f.name;
+    const share = $("#viewer-share");
+    const file = new File([blob], f.name, { type: blob.type });
+    share.hidden = !(navigator.canShare && navigator.canShare({ files: [file] }));
+    share.onclick = async () => { try { await navigator.share({ files: [file] }); } catch (e) { if (e.name !== "AbortError") alert("共有できませんでした: " + e.message); } };
+    $("#viewer").hidden = false;
+  }
+  $("#viewer-close").addEventListener("click", () => { $("#viewer").hidden = true; $("#viewer-body").innerHTML = ""; });
+
+  // ---- 履歴
+  async function loadHistory() {
+    const ul = $("#history"); ul.innerHTML = "";
+    if (!cfg.repo || !cfg.token) { ul.innerHTML = "<li><span>右上の ⚙︎ から接続設定をしてください</span></li>"; return; }
+    let dirs;
+    try { dirs = await ghJson(`/contents/requests?ref=${BRANCH}`); }
+    catch (e) { ul.innerHTML = `<li><span>${e.status === 404 ? "まだ取得履歴がありません" : e.message}</span></li>`; return; }
+    dirs = dirs.filter((d) => d.type === "dir").sort((a, b) => (a.name < b.name ? 1 : -1)).slice(0, 10);
+    for (const d of dirs) {
+      const li = document.createElement("li");
+      const label = document.createElement("span"); label.textContent = d.name;
+      const btn = document.createElement("button"); btn.className = "ghost small"; btn.textContent = "開く";
+      li.append(label, btn); ul.appendChild(li);
+      ghRaw(`requests/${d.name}/manifest.json`).then((r) => r.json()).then((m) => {
+        const n = (m.files || []).filter((f) => !f.error).length;
+        label.innerHTML = `${m.author ? "@" + m.author : m.input}<small>${new Date((m.created || 0) * 1000).toLocaleString("ja-JP")} · ${m.status === "ok" ? n + " 件" : "失敗"}</small>`;
+        btn.onclick = () => { if (m.status === "ok") { render(m); window.scrollTo({ top: 0, behavior: "smooth" }); } else alert(m.error || "失敗"); };
+      }).catch(() => {});
+    }
+  }
+  $("#btn-history").addEventListener("click", loadHistory);
+
+  // ---- 設定画面
+  function openSettings() {
+    $("#s-repo").value = cfg.repo || "booptemp/SNSDownloader1";
+    $("#s-token").value = cfg.token; $("#s-ref").value = cfg.ref;
+    $("#s-msg").hidden = true; $("#settings").hidden = false;
+  }
+  $("#btn-settings").addEventListener("click", openSettings);
+  $("#settings-close").addEventListener("click", () => { $("#settings").hidden = true; });
+  $("#s-save").addEventListener("click", async () => {
+    localStorage.setItem("snsdl.repo", $("#s-repo").value.trim());
+    localStorage.setItem("snsdl.token", $("#s-token").value.trim());
+    localStorage.setItem("snsdl.ref", $("#s-ref").value.trim());
+    const msg = $("#s-msg"); msg.hidden = false; msg.className = "status"; msg.textContent = "確認中…";
+    try {
+      const repo = await ghJson("");
+      const wf = await ghJson(`/actions/workflows/${WORKFLOW}`);
+      msg.className = "status ok"; msg.textContent = `接続OK: ${repo.full_name}（既定ブランチ ${repo.default_branch}、ワークフロー ${wf.state}）`;
+      loadHistory();
+    } catch (e) {
+      msg.className = "status error";
+      msg.textContent = e.status === 404 ? "リポジトリかワークフローが見つかりません（トークンの対象リポジトリと権限を確認）" : e.message;
+    }
+  });
+
+  // 共有シートから ?url= で開いたとき
+  const params = new URLSearchParams(location.search);
+  if (params.get("url")) { $("#url").value = params.get("url"); history.replaceState(null, "", location.pathname); }
+  if (!cfg.token) openSettings(); else { loadHistory(); if (params.get("url")) go(); }
+})();
+</script>
+</body>
+</html>
