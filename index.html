@@ -78,10 +78,10 @@ a { color:var(--accent); }
     </div>
     <div id="pane-url">
       <div class="input-row">
-        <input id="url" type="url" inputmode="url" placeholder="X / Instagram の投稿URLを貼り付け" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+        <input id="url" type="url" inputmode="url" placeholder="X / Instagram / YouTube / TikTok のURL" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
         <button id="btn-paste" class="ghost" type="button">貼付</button>
       </div>
-      <p class="hint">X（Twitter）の投稿、Instagram の投稿・リール・ハイライトに対応。画像は元画質で取得します。</p>
+      <p class="hint">X（Twitter）の投稿、Instagram の投稿・リール・ハイライト、YouTube・TikTok の動画に対応。画像は元画質、動画は 95MB に収まる最高画質で取得します。</p>
     </div>
     <div id="pane-stories" hidden>
       <div class="input-row">
@@ -217,7 +217,7 @@ a { color:var(--accent); }
 
       while (run.status !== "completed") {
         await sleep(4000);
-        tick(run.status === "queued" ? "順番待ち…（他の取得が終わるまで待機）" : "取得中…（1〜2分かかります）");
+        tick(run.status === "queued" ? "順番待ち…（他の取得が終わるまで待機）" : "取得中…（画像は1分前後、動画は数分かかります）");
         run = await ghJson(`/actions/runs/${run.id}`);
       }
 
@@ -255,7 +255,7 @@ a { color:var(--accent); }
   }
 
   async function render(m) {
-    $("#r-author").textContent = m.author ? "@" + m.author.replace(/^@/, "") : (m.site || "");
+    $("#r-author").textContent = m.author ? (isSnsSite(m.site) ? "@" : "") + m.author.replace(/^@/, "") : (m.site || "");
     $("#r-title").textContent = m.title || "";
     $("#r-open").href = m.source_url || "#";
     const grid = $("#grid"); grid.innerHTML = "";
@@ -308,19 +308,25 @@ a { color:var(--accent); }
     let dirs;
     try { dirs = await ghJson(`/contents/requests?ref=${BRANCH}`); }
     catch (e) { ul.innerHTML = `<li><span>${e.status === 404 ? "まだ取得履歴がありません" : e.message}</span></li>`; return; }
-    dirs = dirs.filter((d) => d.type === "dir").sort((a, b) => (a.name < b.name ? 1 : -1)).slice(0, 10);
-    for (const d of dirs) {
+    dirs = dirs.filter((d) => d.type === "dir");
+    // manifest を読んで created（取得日時）の新しい順に並べる
+    const manifests = await Promise.all(dirs.map((d) =>
+      ghRaw(`requests/${d.name}/manifest.json`).then((r) => r.json()).catch(() => null)));
+    const entries = manifests.filter(Boolean).sort((a, b) => (b.created || 0) - (a.created || 0)).slice(0, 15);
+    if (!entries.length) { ul.innerHTML = "<li><span>まだ取得履歴がありません</span></li>"; return; }
+    for (const m of entries) {
       const li = document.createElement("li");
-      const label = document.createElement("span"); label.textContent = d.name;
+      const label = document.createElement("span");
       const btn = document.createElement("button"); btn.className = "ghost small"; btn.textContent = "開く";
+      const n = (m.files || []).filter((f) => !f.error).length;
+      const who = m.author ? (isSnsSite(m.site) ? "@" : "") + m.author : (m.title || m.input);
+      label.innerHTML = `${esc(who)}<small>${new Date((m.created || 0) * 1000).toLocaleString("ja-JP")} · ${m.status === "ok" ? n + " 件" : "失敗"}${m.site ? " · " + esc(m.site) : ""}</small>`;
+      btn.onclick = () => { if (m.status === "ok") { render(m); window.scrollTo({ top: 0, behavior: "smooth" }); } else alert(m.error || "失敗"); };
       li.append(label, btn); ul.appendChild(li);
-      ghRaw(`requests/${d.name}/manifest.json`).then((r) => r.json()).then((m) => {
-        const n = (m.files || []).filter((f) => !f.error).length;
-        label.innerHTML = `${m.author ? "@" + m.author : m.input}<small>${new Date((m.created || 0) * 1000).toLocaleString("ja-JP")} · ${m.status === "ok" ? n + " 件" : "失敗"}</small>`;
-        btn.onclick = () => { if (m.status === "ok") { render(m); window.scrollTo({ top: 0, behavior: "smooth" }); } else alert(m.error || "失敗"); };
-      }).catch(() => {});
     }
   }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const isSnsSite = (s) => ["x", "twitter", "instagram"].includes(s);
   $("#btn-history").addEventListener("click", loadHistory);
 
   // ---- 設定画面
