@@ -81,14 +81,14 @@ a { color:var(--accent); }
         <input id="url" type="url" inputmode="url" placeholder="X / Instagram / YouTube / TikTok のURL" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
         <button id="btn-paste" class="ghost" type="button">貼付</button>
       </div>
-      <p class="hint">X（Twitter）の投稿、Instagram の投稿・リール・ハイライト、YouTube・TikTok の動画に対応。画像は元画質、動画は 95MB に収まる最高画質で取得します。</p>
+      <p class="hint">X（Twitter）の投稿、Instagram の投稿・リール・ハイライト・プロフィール（→ストーリーズ）、YouTube・TikTok の動画に対応。画像は元画質、動画は 95MB に収まる最高画質で取得します。</p>
     </div>
     <div id="pane-stories" hidden>
       <div class="input-row">
         <span class="at">@</span>
-        <input id="username" type="text" placeholder="Instagram ユーザー名" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+        <input id="username" type="text" placeholder="ユーザー名 または プロフィールURL" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
       </div>
-      <p class="hint">現在公開中のストーリーズを取得します。リポジトリの Secrets に Instagram の Cookie 設定が必要です。</p>
+      <p class="hint">現在公開中のストーリーズをすべて取得します（プロフィールの URL を貼っても OK）。リポジトリの Secrets に Instagram の Cookie 設定が必要です。</p>
     </div>
     <button id="btn-go" class="primary">取得する</button>
     <p id="status" class="status" hidden></p>
